@@ -14,7 +14,7 @@ def index():
     title = survey.title
     instructions = survey.instructions
     session["responses"] = []
-    session["questions"] = {}
+    
     return render_template("survey_start.html", survey_title=title, 
     survey_instructions=instructions)
 
@@ -24,28 +24,24 @@ def begin():
 
 @app.route("/questions/<int:index>")
 def questions(index):
-    
     question = survey.questions[index]
-    # question_tracker = []
-
-   
-    question_tracker = session["questions"]
-    print(f"\n\n question tracker = {question_tracker}")
-    question_tracker[f"{index}"] = question.question
-    session["questions"] = question_tracker
-
+    session["questions"] = 0
+    session["questions"] = index
     print(f"\n\n session question = {session['questions']}")
-    # question_tracker = session["questions"]
-    
+
+    if index > len(session["responses"]):
+        return redirect(f"/questions/{len(session['responses'])}")
+
     return render_template("question.html",question =question)
 
 
 @app.route("/answer", methods=["POST"])
 def answer():
-
-    response = request.form["answer"]
+    response = {}
+    response[session["questions"]] = request.form["answer"]
 
     responses = session["responses"]
+    print(f"\n\n response = {response}")
     responses.append(response)
     session["responses"] = responses
     print(f"\n\nresponses: {responses}")
