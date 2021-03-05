@@ -8,13 +8,13 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 debug = DebugToolbarExtension(app)
 
-responses = []
-index = 0
 
 @app.route("/")
 def index():
     title = survey.title
     instructions = survey.instructions
+    session["responses"] = []
+    session["questions"] = {}
     return render_template("survey_start.html", survey_title=title, 
     survey_instructions=instructions)
 
@@ -22,16 +22,42 @@ def index():
 def begin():
     return redirect("/questions/0")
 
-@app.route("/questions/<int:question_number>")
-def questions(question_number):
-    index = question_number
+@app.route("/questions/<int:index>")
+def questions(index):
+    
     question = survey.questions[index]
+    # question_tracker = []
+
+   
+    question_tracker = session["questions"]
+    print(f"\n\n question tracker = {question_tracker}")
+    question_tracker[f"{index}"] = question.question
+    session["questions"] = question_tracker
+
+    print(f"\n\n session question = {session['questions']}")
+    # question_tracker = session["questions"]
+    
     return render_template("question.html",question =question)
+
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    # index += 1
-    print(f"\n{request.form}")
+
     response = request.form["answer"]
+
+    responses = session["responses"]
     responses.append(response)
-    return redirect("/questions/1")
+    session["responses"] = responses
+    print(f"\n\nresponses: {responses}")
+    print(f"\n\nsesssion responses: {session['responses']}")
+
+    length = len(responses)
+    
+    if length < len(survey.questions):
+        return redirect(f"/questions/{length}")
+
+    return redirect("/thankyou")
+
+@app.route("/thankyou")
+def thank_you():
+    return render_template("completion.html")
