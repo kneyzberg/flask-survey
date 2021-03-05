@@ -24,28 +24,26 @@ def begin():
 
 @app.route("/questions/<int:index>")
 def questions(index):
-    question = survey.questions[index]
-    session["questions"] = 0
-    session["questions"] = index
-    print(f"\n\n session question = {session['questions']}")
 
-    if index > len(session["responses"]):
-        return redirect(f"/questions/{len(session['responses'])}")
+    response_len = len(session["responses"])
+
+    if index != response_len:
+        flash("Redirected you to correct question")
+        return redirect(f"/questions/{response_len}")
+
+    question = survey.questions[index]
 
     return render_template("question.html",question =question)
 
 
 @app.route("/answer", methods=["POST"])
 def answer():
-    response = {}
-    response[session["questions"]] = request.form["answer"]
+    response = request.form["answer"]
 
     responses = session["responses"]
-    print(f"\n\n response = {response}")
+
     responses.append(response)
     session["responses"] = responses
-    print(f"\n\nresponses: {responses}")
-    print(f"\n\nsesssion responses: {session['responses']}")
 
     length = len(responses)
     
